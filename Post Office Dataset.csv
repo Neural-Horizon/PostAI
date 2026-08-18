@@ -1,0 +1,31 @@
+post_office_name,pin_code,office_type,area,city,district,state,latitude,longitude,delivery_status
+Anna Nagar H.O,600040,Head Office,Anna Nagar,Chennai,Chennai,Tamil Nadu,13.0850,80.2101,Active
+Anna Nagar Western Extension S.O,600101,Sub Office,Anna Nagar West,Chennai,Chennai,Tamil Nadu,13.0952,80.1805,Active
+Shenoy Nagar S.O,600030,Sub Office,Shenoy Nagar,Chennai,Chennai,Tamil Nadu,13.0785,80.2250,Active
+Aminjikarai S.O,600029,Sub Office,Aminjikarai,Chennai,Chennai,Tamil Nadu,13.0718,80.2207,Active
+Kilpauk H.O,600010,Head Office,Kilpauk,Chennai,Chennai,Tamil Nadu,13.0820,80.2410,Active
+Nungambakkam H.O,600034,Head Office,Nungambakkam,Chennai,Chennai,Tamil Nadu,13.0569,80.2425,Active
+T Nagar H.O,600017,Head Office,T Nagar,Chennai,Chennai,Tamil Nadu,13.0418,80.2341,Active
+Mambalam R.S S.O,600033,Sub Office,West Mambalam,Chennai,Chennai,Tamil Nadu,13.0335,80.2230,Active
+Saidapet H.O,600015,Head Office,Saidapet,Chennai,Chennai,Tamil Nadu,13.0210,80.2208,Active
+Guindy Industrial Estate S.O,600032,Sub Office,Guindy,Chennai,Chennai,Tamil Nadu,13.0067,80.2206,Active
+Adyar S.O,600020,Sub Office,Adyar,Chennai,Chennai,Tamil Nadu,13.0067,80.2572,Active
+Besant Nagar S.O,600090,Sub Office,Besant Nagar,Chennai,Chennai,Tamil Nadu,13.0005,80.2668,Active
+Thiruvanmiyur S.O,600041,Sub Office,Thiruvanmiyur,Chennai,Chennai,Tamil Nadu,12.9830,80.2594,Active
+Velachery H.O,600042,Head Office,Velachery,Chennai,Chennai,Tamil Nadu,12.9815,80.2180,Active
+Perungudi S.O,600096,Sub Office,Perungudi,Chennai,Chennai,Tamil Nadu,12.9600,80.2475,Active
+Sholinganallur S.O,600119,Sub Office,Sholinganallur,Chennai,Chennai,Tamil Nadu,12.9010,80.2279,Active
+Tambaram H.O,600045,Head Office,Tambaram,Chengalpattu,Tamil Nadu,12.9249,80.1000,Active
+Chromepet S.O,600044,Sub Office,Chromepet,Chennai,Chennai,Tamil Nadu,12.9516,80.1462,Active
+Pallavaram S.O,600043,Sub Office,Pallavaram,Chennai,Chennai,Tamil Nadu,12.9675,80.1491,Active
+Porur S.O,600116,Sub Office,Porur,Chennai,Chennai,Tamil Nadu,13.0358,80.1565,Active
+Ambattur H.O,600053,Head Office,Ambattur,Chennai,Chennai,Tamil Nadu,13.1143,80.1548,Active
+Avadi H.O,600054,Head Office,Avadi,Chennai,Chennai,Tamil Nadu,13.1147,80.1098,Active
+Mogappair S.O,600037,Sub Office,Mogappair,Chennai,Chennai,Tamil Nadu,13.0820,80.1720,Active
+Madhuravoyal S.O,600095,Sub Office,Maduravoyal,Chennai,Chennai,Tamil Nadu,13.0604,80.1630,Active
+Poonamallee S.O,600056,Sub Office,Poonamallee,Chennai,Chennai,Tamil Nadu,13.0475,80.1105,Active
+Triplicane H.O,600005,Head Office,Triplicane,Chennai,Chennai,Tamil Nadu,13.0588,80.2757,Active
+Royapettah H.O,600014,Head Office,Royapettah,Chennai,Chennai,Tamil Nadu,13.0522,80.2630,Active
+Mylapore H.O,600004,Head Office,Mylapore,Chennai,Chennai,Tamil Nadu,13.0337,80.2690,Active
+George Town H.O,600001,Head Office,George Town,Chennai,Chennai,Tamil Nadu,13.0878,80.2785,Active
+Park Town S.O,600003,Sub Office,Park Town,Chennai,Chennai,Tamil Nadu,13.0827,80.2765,Active

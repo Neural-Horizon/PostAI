@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PostAI — Intelligent Postal Address &amp; Delivery Office Identification</title>
+  <meta name="description" content="AI-powered postal address intelligence and delivery office recommendation system. SIH 2025 Prototype." />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════════════ -->
+<nav id="navbar">
+  <div class="nav-brand">
+    <div class="nav-logo-mark">P</div>
+    <div class="nav-logo-text">Post<span>AI</span></div>
+  </div>
+
+  <div class="nav-links">
+    <button class="nav-link active" data-page="home">Home</button>
+    <button class="nav-link" data-page="analyze">Analyze Address</button>
+    <button class="nav-link" data-page="how">How It Works</button>
+    <button class="nav-link" data-page="dashboard">Dashboard</button>
+    <button class="nav-link" data-page="about">About</button>
+    <div class="nav-badge">Prototype &nbsp;·&nbsp; SIH 2025</div>
+  </div>
+
+  <button id="mobile-menu-btn">☰</button>
+</nav>
+
+<div id="mobile-nav" class="nav-links" style="display:none;">
+  <button class="nav-link active" data-page="home">Home</button>
+  <button class="nav-link" data-page="analyze">Analyze Address</button>
+  <button class="nav-link" data-page="how">How It Works</button>
+  <button class="nav-link" data-page="dashboard">Dashboard</button>
+  <button class="nav-link" data-page="about">About</button>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE: HOME
+═══════════════════════════════════════════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-grid">
+        <!-- Left -->
+        <div>
+          <div class="hero-eyebrow">
+            <span class="dot"></span>
+            SIH 2025 &nbsp;·&nbsp; Problem Statement SIH1758
+          </div>
+          <h1 class="hero-title">
+            Find the Right Delivery Office.<br>
+            <span>Even When the Address Isn't Perfect.</span>
+          </h1>
+          <p class="hero-sub">
+            PostAI uses address intelligence, geospatial matching, and postal data to identify the most appropriate delivery post office and detect address–PIN inconsistencies automatically.
+          </p>
+          <div class="hero-btns">
+            <button id="hero-analyze-btn" class="btn btn-primary btn-large">Analyze an Address</button>
+            <button id="hero-how-btn" class="btn btn-outline btn-large" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3)">See How It Works</button>
+          </div>
+          <div class="hero-badges">
+            <div class="hero-badge"><span class="dot"></span> Address Intelligence</div>
+            <div class="hero-badge"><span class="dot"></span> PIN Validation</div>
+            <div class="hero-badge"><span class="dot"></span> Geospatial Matching</div>
+            <div class="hero-badge"><span class="dot"></span> Confidence Scoring</div>
+          </div>
+        </div>
+
+        <!-- Right: Demo card -->
+        <div>
+          <div class="hero-demo-card">
+            <div class="demo-card-header">
+              <span>📮</span> Live Address Analysis
+            </div>
+            <div class="demo-input-mock">24 Gandhi Road, Anna Nagar, Chennai 600040</div>
+            <div class="demo-steps">
+              <div class="demo-step"><div class="demo-step-icon ok">✓</div> Address Parsed — 7 components extracted</div>
+              <div class="demo-step"><div class="demo-step-icon ok">✓</div> PIN 600040 validated — Format OK</div>
+              <div class="demo-step"><div class="demo-step-icon ok">✓</div> Coordinates found — 13.0860° N, 80.2101° E</div>
+              <div class="demo-step"><div class="demo-step-icon ok">✓</div> 30 offices scored &amp; ranked</div>
+            </div>
+            <div class="demo-result">
+              <div>
+                <div class="demo-result-name">Anna Nagar H.O.</div>
+                <div class="demo-result-sub">Head Office · 600040 · 0.1 km</div>
+              </div>
+              <div class="demo-result-score">94%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Statement -->
+  <section class="problem-section section-pad">
+    <div class="container">
+      <div style="max-width:680px">
+        <div class="section-eyebrow">The Problem</div>
+        <h2 class="section-title">Why Postal Routing Fails</h2>
+        <p class="section-sub">
+          Customers and postal operators face daily challenges when identifying the correct delivery post office due to address data quality issues.
+        </p>
+        <div class="problem-chips" style="margin-top:24px">
+          <div class="problem-chip">Incorrect PIN codes</div>
+          <div class="problem-chip">Incomplete addresses</div>
+          <div class="problem-chip">Ambiguous area names</div>
+          <div class="problem-chip">PIN–area mismatches</div>
+          <div class="problem-chip">Manual lookup delays</div>
+          <div class="problem-chip">No geospatial verification</div>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:40px">
+        <div class="feature-card">
+          <div class="feature-icon fi-blue">📦</div>
+          <div class="feature-title">Delivery Delays</div>
+          <div class="feature-desc">Incorrect post office routing causes delays of 1–5 days per misrouted parcel, affecting thousands of deliveries daily.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-amber">⚠</div>
+          <div class="feature-title">Human Error in Sorting</div>
+          <div class="feature-desc">Sorting staff must manually cross-reference incomplete addresses, creating bottlenecks and inconsistent decisions.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-cyan">📊</div>
+          <div class="feature-title">No Systematic Validation</div>
+          <div class="feature-desc">Existing systems lack automated PIN-to-area consistency checking or geospatial confirmation of address data.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section section-pad">
+    <div class="container">
+      <div style="text-align:center;margin-bottom:44px">
+        <div class="section-eyebrow">PostAI Solution</div>
+        <h2 class="section-title">Intelligent Address Analysis in Four Steps</h2>
+        <p class="section-sub" style="margin:0 auto">PostAI doesn't just find a post office — it analyzes the address, validates the PIN, checks geographic consistency, and explains its recommendation.</p>
+      </div>
+      <div class="grid-4">
+        <div class="feature-card">
+          <div class="feature-icon fi-blue">🧠</div>
+          <div class="feature-title">Address Intelligence</div>
+          <div class="feature-desc">Extract and normalize address components: house number, street, area, city, district, state, and PIN code automatically.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-amber">🔢</div>
+          <div class="feature-title">PIN Validation</div>
+          <div class="feature-desc">Detect missing, invalid, or geographically inconsistent PIN codes and flag potential mismatches before dispatch.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-cyan">🗺</div>
+          <div class="feature-title">Geospatial Matching</div>
+          <div class="feature-desc">Geocode the destination and calculate real-world distances to every post office using the Haversine formula.</div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon fi-green">✅</div>
+          <div class="feature-title">Explainable Recommendation</div>
+          <div class="feature-desc">Rank candidates using a transparent weighted scoring model and show exactly why a particular office was selected.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section style="background:var(--slate-100);padding:52px 0">
+    <div class="container">
+      <div class="cta-banner">
+        <div>
+          <h2>Try the Live Prototype</h2>
+          <p>Enter any Chennai address and see PostAI identify the correct delivery office in under 5 seconds.</p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-large" data-goto="analyze">Analyze an Address</button>
+          <button class="btn btn-outline btn-large" style="color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3)" data-goto="dashboard">View Dashboard</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      PostAI &nbsp;<span>|</span>&nbsp; SIH 2026 Prototype &nbsp;<span>|</span>&nbsp; Problem Statement SIH1758 &nbsp;<span>|</span>&nbsp; Ministry of Communication &nbsp;<span>|</span>&nbsp; Not affiliated with India Post
+    </div>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE: ANALYZE ADDRESS
+═══════════════════════════════════════════════════════════════════ -->
+<div id="page-analyze" class="page">
+
+  <div class="analyze-header">
+    <div class="container">
+      <div class="section-eyebrow" style="background:rgba(6,182,212,.15);color:var(--cyan-400)">Address Analysis Engine</div>
+      <h1>Intelligent Address Analysis</h1>
+      <p>Enter a postal address and let PostAI identify the most suitable delivery post office.</p>
+    </div>
+  </div>
+
+  <div class="analyze-body">
+    <div class="container">
+      <div class="analyze-layout">
+
+        <!-- Input Panel (sticky left) -->
+        <div class="input-panel">
+          <div class="card">
+            <!-- Tabs -->
+            <div class="tab-buttons">
+              <button class="tab-btn active" id="tab-btn-text">Enter Address</button>
+              <button class="tab-btn" id="tab-btn-image">Upload Image</button>
+            </div>
+
+            <!-- Text Tab -->
+            <div id="tab-text">
+              <textarea id="address-input" placeholder="Example: 24 Gandhi Road, Anna Nagar, Chennai 600040"></textarea>
+
+              <button id="analyze-btn">Analyze Address</button>
+
+              <div class="demo-buttons">
+                <div class="demo-buttons-label">Quick Demo Scenarios</div>
+                <button class="demo-btn" data-demo="correct">Demo — Correct Address</button>
+                <button class="demo-btn" data-demo="mismatch">Demo — PIN Mismatch</button>
+                <button class="demo-btn" data-demo="incomplete">Demo — Incomplete Address</button>
+              </div>
+            </div>
+
+            <!-- Image Tab -->
+            <div id="tab-image" class="hidden">
+              <div class="dropzone" id="dropzone">
+                <div class="dropzone-icon">📷</div>
+                <p>Drag &amp; drop an address image here, or click to browse</p>
+                <small>PNG · JPG · JPEG supported</small>
+              </div>
+              <input type="file" id="file-input" accept="image/png,image/jpeg,image/jpg" />
+
+              <div class="ocr-demo-banner" id="ocr-banner">
+                <span id="ocr-banner-icon">⏳</span>
+                <span id="ocr-banner-text">Loading Tesseract.js OCR engine…</span>
+              </div>
+
+              <div id="ocr-preview-wrap" class="hidden">
+                <img id="ocr-preview" src="" alt="Uploaded address image" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;border:1px solid var(--slate-200)" />
+              </div>
+
+              <div id="ocr-processing" class="hidden" style="margin-top:14px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                  <span class="ocr-spinner"></span>
+                  <span id="ocr-status-text" style="font-size:13.5px;color:var(--slate-600)">Loading OCR engine…</span>
+                </div>
+                <div style="background:var(--slate-100);border-radius:6px;height:5px;overflow:hidden">
+                  <div id="ocr-progress-bar" style="height:100%;background:var(--blue-500);width:0%;transition:width .25s ease"></div>
+                </div>
+              </div>
+
+              <div id="ocr-result-wrap" class="hidden" style="margin-top:14px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:12.5px;color:var(--slate-500);font-weight:600">OCR — Extracted Text (editable)</span>
+                  <span id="ocr-confidence" style="font-size:12px;color:var(--slate-400)"></span>
+                </div>
+                <textarea id="ocr-extracted" placeholder="Extracted address text will appear here…"></textarea>
+                <div style="font-size:11.5px;color:var(--slate-400);margin-top:6px">Review and edit the extracted text if needed, then click below to analyze.</div>
+                <button id="use-ocr-btn" class="btn btn-primary" style="width:100%;margin-top:10px">Use Extracted Text &amp; Analyze</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scoring Model Info -->
+          <div class="card" style="margin-top:18px;background:var(--navy-950);border-color:var(--navy-800)">
+            <div style="color:rgba(255,255,255,.5);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Prototype Scoring Model</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:13px;color:rgba(255,255,255,.7)">PIN Match</span>
+                <span style="font-size:14px;font-weight:700;color:var(--cyan-400)">40%</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:13px;color:rgba(255,255,255,.7)">Geographic Proximity</span>
+                <span style="font-size:14px;font-weight:700;color:var(--cyan-400)">30%</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:13px;color:rgba(255,255,255,.7)">Area Match</span>
+                <span style="font-size:14px;font-weight:700;color:var(--cyan-400)">20%</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:13px;color:rgba(255,255,255,.7)">Office Status</span>
+                <span style="font-size:14px;font-weight:700;color:var(--cyan-400)">10%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Processing + Results -->
+        <div>
+          <!-- Processing Pipeline (hidden initially) -->
+          <div id="processing-section" class="hidden">
+            <div class="processing-title">Analyzing Address…</div>
+            <div class="processing-sub">Running PostAI's 5-stage analysis pipeline</div>
+            <div id="processing-steps"></div>
+          </div>
+
+          <!-- Results Section (hidden initially) -->
+          <div id="results-section" class="hidden"></div>
+
+          <!-- Empty state -->
+          <div id="empty-state" style="text-align:center;padding:80px 24px">
+            <div style="font-size:56px;margin-bottom:20px">📮</div>
+            <h3 style="font-size:20px;font-weight:700;color:var(--slate-700);margin-bottom:10px">Ready to Analyze</h3>
+            <p style="font-size:14px;color:var(--slate-400);max-width:340px;margin:0 auto">Enter a postal address on the left or try a demo scenario to see PostAI's full analysis pipeline.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div class="container">PostAI &nbsp;·&nbsp; Prototype Dataset — Chennai Post Offices &nbsp;·&nbsp; Geocoding: OpenStreetMap Nominatim</div></footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE: DASHBOARD
+═══════════════════════════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page">
+
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="section-eyebrow" style="background:rgba(6,182,212,.15);color:var(--cyan-400)">System Analytics</div>
+      <h1>Prototype Dashboard</h1>
+      <p>Aggregated analytics from prototype sessions. All data is demonstration data.</p>
+    </div>
+  </div>
+
+  <div class="section-pad">
+    <div class="container">
+
+      <div class="prototype-banner">
+        <span style="font-size:18px">⚠</span>
+        <div><strong>Prototype Analytics</strong> — All figures below are demonstration data generated for SIH 2026 presentation purposes and do not represent live India Post statistics.</div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="grid-4" style="margin-bottom:32px">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(59,130,246,.1)">📋</div>
+          <div class="stat-value">128</div>
+          <div class="stat-label">Addresses Analyzed</div>
+          <div class="stat-change up">↑ 23 this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(239,68,68,.1)">⚠</div>
+          <div class="stat-value">17</div>
+          <div class="stat-label">PIN Mismatches Detected</div>
+          <div class="stat-change warn">13.3% mismatch rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(16,185,129,.1)">✅</div>
+          <div class="stat-value">109</div>
+          <div class="stat-label">Successful Matches</div>
+          <div class="stat-change up">↑ 85.2% success rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(6,182,212,.1)">📊</div>
+          <div class="stat-value">91.4%</div>
+          <div class="stat-label">Average Confidence</div>
+          <div class="stat-change up">↑ 2.1% vs last month</div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid" style="margin-bottom:24px">
+        <div class="chart-card">
+          <div class="chart-title">Recommendation Confidence Distribution</div>
+          <div class="chart-sub">Breakdown of confidence scores across all analyzed addresses</div>
+          <canvas id="chart-confidence" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Monthly Analysis Volume</div>
+          <div class="chart-sub">Number of addresses analyzed per month (prototype sessions)</div>
+          <canvas id="chart-volume" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">PIN Match vs Mismatch by Area</div>
+          <div class="chart-sub">Top areas by volume — matched vs mismatched addresses</div>
+          <canvas id="chart-mismatch" height="260"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Average Distance to Recommended Office</div>
+          <div class="chart-sub">Monthly trend in km — lower is better</div>
+          <canvas id="chart-distance" height="260"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer"><div class="container">PostAI Dashboard &nbsp;·&nbsp; All data is prototype demonstration data &nbsp;·&nbsp; Not live India Post statistics</div></footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE: HOW IT WORKS
+═══════════════════════════════════════════════════════════════════ -->
+<div id="page-how" class="page">
+
+  <div class="how-header">
+    <div class="container">
+      <div class="section-eyebrow" style="background:rgba(6,182,212,.15);color:var(--cyan-400)">System Design</div>
+      <h1>How PostAI Works</h1>
+      <p>A five-stage pipeline that turns a raw postal address into an explainable delivery office recommendation.</p>
+    </div>
+  </div>
+
+  <div class="section-pad">
+    <div class="container">
+      <div class="grid-2" style="gap:52px;align-items:start">
+
+        <!-- Workflow Steps -->
+        <div>
+          <h2 class="section-title">5-Stage Analysis Pipeline</h2>
+          <div class="workflow-steps" style="margin-top:28px">
+
+            <div class="workflow-step">
+              <div class="ws-number">1</div>
+              <div class="ws-body">
+                <div class="ws-step-label">Stage 1</div>
+                <div class="ws-title">Address Input</div>
+                <div class="ws-desc">The user provides a raw postal address (text) or uploads an image of an address label. The system accepts Indian address formats including structured and unstructured text.</div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="ws-number">2</div>
+              <div class="ws-body">
+                <div class="ws-step-label">Stage 2</div>
+                <div class="ws-title">Address Parsing</div>
+                <div class="ws-desc">PostAI's parser extracts structured components: house/unit number, street name, area/locality, city, district, state, and PIN code using pattern matching and known entity dictionaries.</div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="ws-number">3</div>
+              <div class="ws-body">
+                <div class="ws-step-label">Stage 3</div>
+                <div class="ws-title">PIN &amp; Location Validation</div>
+                <div class="ws-desc">The extracted PIN is validated for format, regional zone, and consistency with the stated area. Mismatches between area names and PIN code service areas are flagged for review.</div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="ws-number">4</div>
+              <div class="ws-body">
+                <div class="ws-step-label">Stage 4</div>
+                <div class="ws-title">Geospatial Post Office Matching</div>
+                <div class="ws-desc">The address is geocoded via the Nominatim / OpenStreetMap API (with a local area-lookup fallback). The Haversine formula calculates the real-world distance from the destination to every post office in the dataset.</div>
+              </div>
+            </div>
+
+            <div class="workflow-step">
+              <div class="ws-number">5</div>
+              <div class="ws-body">
+                <div class="ws-step-label">Stage 5</div>
+                <div class="ws-title">Explainable Recommendation</div>
+                <div class="ws-desc">Each candidate post office receives a weighted composite score. The highest-scoring office is recommended with a confidence percentage and a plain-language explanation of every factor that influenced the decision.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Architecture + Scoring -->
+        <div>
+          <h2 class="section-title">System Architecture</h2>
+          <div class="arch-diagram" style="margin-top:28px;margin-bottom:40px">
+            <div class="arch-node arch-primary">User (Web Interface)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Address Text / Image Upload</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Address Parser &amp; PIN Validator</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node arch-api">Geocoding API (Nominatim / OpenStreetMap)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Latitude &amp; Longitude</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Post Office Dataset (30 Chennai P.O.s)</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Haversine Distance Engine</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node">Weighted Scoring Model</div>
+            <div class="arch-arrow">↓</div>
+            <div class="arch-node arch-highlight">Recommendation + Confidence Score + Explanation</div>
+          </div>
+
+          <h2 class="section-title">Prototype Scoring Model</h2>
+          <p style="font-size:14px;color:var(--slate-500);margin-top:10px;margin-bottom:22px">Each candidate post office is scored using four independent signals, combined into a 0–100 confidence score.</p>
+          <div class="scoring-weights">
+            <div class="weight-card">
+              <div class="weight-pct">40%</div>
+              <div class="weight-label">PIN Match</div>
+              <div class="weight-sub">Exact · Zone · No match</div>
+            </div>
+            <div class="weight-card">
+              <div class="weight-pct">30%</div>
+              <div class="weight-label">Distance</div>
+              <div class="weight-sub">Haversine km</div>
+            </div>
+            <div class="weight-card">
+              <div class="weight-pct">20%</div>
+              <div class="weight-label">Area Match</div>
+              <div class="weight-sub">High · Partial · None</div>
+            </div>
+            <div class="weight-card">
+              <div class="weight-pct">10%</div>
+              <div class="weight-label">Status</div>
+              <div class="weight-sub">Active / Inactive</div>
+            </div>
+          </div>
+          <div style="background:var(--slate-50);border:1px solid var(--slate-200);border-radius:10px;padding:16px;margin-top:20px;font-size:13.5px;color:var(--slate-600)">
+            <strong>Formula:</strong><br>
+            Score = 0.40 × PIN + 0.30 × Distance + 0.20 × Area + 0.10 × Status
+            <br><br>
+            <em style="color:var(--slate-400);font-size:12.5px">This is a prototype scoring model created for SIH 2026 demonstration. It does not represent an official India Post algorithm.</em>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Integration -->
+      <div class="card" style="margin-top:52px">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size:18px">API Integration</h3>
+          <span class="badge badge-green">No API Key Required</span>
+        </div>
+        <div class="grid-3" style="gap:20px">
+          <div>
+            <div style="font-size:12px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Geocoding</div>
+            <div style="font-size:14.5px;font-weight:600;color:var(--slate-800);margin-bottom:4px">Nominatim / OpenStreetMap</div>
+            <div style="font-size:13px;color:var(--slate-500)">Free geocoding API. Converts postal addresses to latitude/longitude. No API key required. Rate-limited to 1 request/sec.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Mapping</div>
+            <div style="font-size:14.5px;font-weight:600;color:var(--slate-800);margin-bottom:4px">Leaflet + OpenStreetMap Tiles</div>
+            <div style="font-size:13px;color:var(--slate-500)">Open-source interactive maps with OpenStreetMap tile data. No paid subscription. Markers and route lines rendered client-side.</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Fallback</div>
+            <div style="font-size:14.5px;font-weight:600;color:var(--slate-800);margin-bottom:4px">Local Area Coordinate Lookup</div>
+            <div style="font-size:13px;color:var(--slate-500)">If Nominatim is unavailable, the system uses a local table of area → coordinates for all major Chennai localities. Works offline.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer"><div class="container">PostAI &nbsp;·&nbsp; System Architecture for SIH 2026 Prototype</div></footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PAGE: ABOUT
+═══════════════════════════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+
+  <div class="about-header">
+    <div class="container">
+      <div class="section-eyebrow" style="background:rgba(6,182,212,.15);color:var(--cyan-400)">SIH 2026</div>
+      <h1>Built for Smart India Hackathon</h1>
+      <p style="color:rgba(255,255,255,.65);font-size:16px;margin-top:8px">PostAI is a prototype developed for Smart India Hackathon 2026, addressing postal logistics challenges in India.</p>
+    </div>
+  </div>
+
+  <div class="section-pad">
+    <div class="container">
+
+      <!-- SIH Problem Statement -->
+      <div class="card" style="margin-bottom:28px">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size:18px">Problem Statement Details</h3>
+          <span class="badge badge-blue">SIH1758</span>
+        </div>
+        <div class="sih-info-grid">
+          <div class="sih-field">
+            <div class="sih-label">Problem ID</div>
+            <div class="sih-value">SIH1758</div>
+          </div>
+          <div class="sih-field">
+            <div class="sih-label">Title</div>
+            <div class="sih-value">AI-Powered Delivery Post Office Identification System</div>
+          </div>
+          <div class="sih-field">
+            <div class="sih-label">Organization</div>
+            <div class="sih-value">Ministry of Communication</div>
+          </div>
+          <div class="sih-field">
+            <div class="sih-label">Department</div>
+            <div class="sih-value">Department of Posts (India Post)</div>
+          </div>
+          <div class="sih-field">
+            <div class="sih-label">Category</div>
+            <div class="sih-value">Software</div>
+          </div>
+          <div class="sih-field">
+            <div class="sih-label">Theme</div>
+            <div class="sih-value">Transportation &amp; Logistics</div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--slate-100)">
+          <div class="sih-label" style="margin-bottom:10px">Problem Description</div>
+          <p style="font-size:14px;color:var(--slate-600);line-height:1.8">
+            Customers and postal operators face significant challenges in identifying the correct delivery post office when postal addresses contain incorrect, incomplete, ambiguous, or mismatched address and PIN code information. This leads to delays, misrouting, and inefficiencies in the postal delivery system. The goal is to develop an AI-powered system that can intelligently analyze addresses, validate PIN codes against geographic locations, identify the most appropriate delivery post office, and flag potential inconsistencies for human review.
+          </p>
+        </div>
+      </div>
+
+      <!-- PostAI Solution Summary -->
+      <div class="card" style="margin-bottom:28px">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size:18px">PostAI's Approach</h3>
+        </div>
+        <div class="grid-3" style="gap:20px">
+          <div style="padding:16px;background:var(--slate-50);border-radius:10px">
+            <div style="font-size:22px;margin-bottom:8px">🔍</div>
+            <div style="font-size:14px;font-weight:700;color:var(--slate-800);margin-bottom:6px">Structured Address Parsing</div>
+            <div style="font-size:13px;color:var(--slate-500)">Regex and keyword-based extraction of all address components without requiring a trained ML model — fast, interpretable, and reliable.</div>
+          </div>
+          <div style="padding:16px;background:var(--slate-50);border-radius:10px">
+            <div style="font-size:22px;margin-bottom:8px">🌐</div>
+            <div style="font-size:14px;font-weight:700;color:var(--slate-800);margin-bottom:6px">Open Geospatial Stack</div>
+            <div style="font-size:13px;color:var(--slate-500)">Nominatim + OpenStreetMap + Leaflet provide a complete, free, open-source geospatial pipeline with no vendor lock-in or API cost.</div>
+          </div>
+          <div style="padding:16px;background:var(--slate-50);border-radius:10px">
+            <div style="font-size:22px;margin-bottom:8px">📊</div>
+            <div style="font-size:14px;font-weight:700;color:var(--slate-800);margin-bottom:6px">Transparent Scoring</div>
+            <div style="font-size:13px;color:var(--slate-500)">Every recommendation includes the individual component scores and the reasons behind the final decision — fully explainable to postal staff.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technology Stack -->
+      <div class="card" style="margin-bottom:28px">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size:18px">Technology Stack</h3>
+          <span class="badge badge-gray">No Backend Required</span>
+        </div>
+        <div class="tech-grid">
+          <div class="tech-card">
+            <div class="tech-name">HTML5 + CSS3</div>
+            <div class="tech-role">Responsive frontend UI</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Vanilla JavaScript</div>
+            <div class="tech-role">Address parsing, scoring, orchestration</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Leaflet.js</div>
+            <div class="tech-role">Interactive geospatial map</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">OpenStreetMap</div>
+            <div class="tech-role">Free map tiles &amp; geocoding</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Nominatim API</div>
+            <div class="tech-role">Address → coordinates</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Chart.js</div>
+            <div class="tech-role">Dashboard analytics charts</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Haversine Formula</div>
+            <div class="tech-role">Real-world distance calculation</div>
+          </div>
+          <div class="tech-card">
+            <div class="tech-name">Local JSON Dataset</div>
+            <div class="tech-role">30 Chennai post offices</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="disclaimer-card">
+        <h3>⚠ Prototype Disclaimer</h3>
+        <p>
+          PostAI is a <strong>prototype system</strong> developed solely for the Smart India Hackathon 2026 demonstration. It is <strong>not affiliated with, endorsed by, or officially connected to India Post, the Department of Posts, or the Ministry of Communications</strong>. The post office dataset used is a prototype dataset derived from publicly available information and is intended for demonstration purposes only. It may be incomplete, inaccurate, or outdated. The scoring model and recommendations are for demonstration and should not be used for actual postal routing decisions. All analytics shown on the Dashboard are prototype demonstration data.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      PostAI &nbsp;<span>|</span>&nbsp; Smart India Hackathon 2026 &nbsp;<span>|</span>&nbsp; Problem SIH1758 &nbsp;<span>|</span>&nbsp; Prototype — Not affiliated with India Post
+    </div>
+  </footer>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/scoring.js"></script>
+<script src="js/geocoding.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+// Hide empty state when processing/results become visible
+const observer = new MutationObserver(() => {
+  const hasContent = !document.getElementById('processing-section').classList.contains('hidden') ||
+                     !document.getElementById('results-section').classList.contains('hidden');
+  const es = document.getElementById('empty-state');
+  if (es) es.style.display = hasContent ? 'none' : 'block';
+});
+const ps = document.getElementById('processing-section');
+const rs = document.getElementById('results-section');
+if (ps) observer.observe(ps, { attributes: true });
+if (rs) observer.observe(rs, { attributes: true });
+</script>
+
+</body>
+</html>
