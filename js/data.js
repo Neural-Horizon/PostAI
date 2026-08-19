@@ -1,6 +1,5 @@
 // PostAI — Prototype Post Office Dataset
-// Source: Derived from India Post public data for SIH 2026 demonstration
-// PROTOTYPE DATASET — Not for official use
+// Prototype dataset — not for official use
 
 const POST_OFFICES = [
   { id: 1,  name: "Anna Nagar H.O",                    pin: "600040", type: "Head Office", area: "Anna Nagar",        city: "Chennai",      district: "Chennai",      state: "Tamil Nadu", lat: 13.0850, lng: 80.2101, status: "Active" },

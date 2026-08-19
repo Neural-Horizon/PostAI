@@ -1,5 +1,5 @@
 // PostAI — Address Parser & Scoring Engine
-// Prototype Recommendation Model for SIH 2026 demonstration
+// Prototype recommendation model
 
 // ─── Address Parser ──────────────────────────────────────────────────────────
 
@@ -17,7 +17,7 @@ function parseAddress(text) {
 
   const knownCities  = ["Chennai", "Chengalpattu", "Kancheepuram", "Madras"];
   const knownStates  = ["Tamil Nadu"];
-  const streetWords  = /\b(road|street|nagar|colony|layout|avenue|lane|salai|marg|bazaar|garden|cross|main|bypass)\b/i;
+  const streetWords  = /\b(road|street|avenue|lane|salai|marg|bazaar|cross|main|bypass)\b/i;
 
   let city = null, area = null, street = null, houseNumber = null;
 
@@ -44,7 +44,7 @@ function parseAddress(text) {
   const hasArea  = !!(area || street);
   const hasCity  = !!city;
   const isComplete   = hasPin && hasArea && hasCity;
-  const isIncomplete = !hasPin && !hasArea;
+  const isIncomplete = !hasPin || !hasArea;
 
   return {
     raw,
