@@ -3,10 +3,13 @@
 
 const APP = {
   currentPage  : "home",
+  currentSection: "home-top",
   currentTab   : "text",
   analysisResult: null,
   leafletMap   : null,
-  charts       : {}
+  charts       : {},
+  dashboardInitialized: false,
+  sectionSettleTimer: null
 };
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
@@ -29,53 +32,95 @@ function setMobileNav(open) {
   if (!menu || !trigger) return;
   menu.style.display = open ? "flex" : "none";
   menu.classList.toggle("open", open);
+  document.body.classList.toggle("nav-open", open);
   trigger.setAttribute("aria-expanded", String(open));
   trigger.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
 }
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
-function showPage(id) {
+function setActiveHomeSection(id) {
+  APP.currentSection = id;
+  document.querySelectorAll(".section-nav-link").forEach(link => {
+    const isActive = APP.currentPage === "home" && link.dataset.scrollTarget === id;
+    link.classList.toggle("active", isActive);
+    if (isActive) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  });
+}
+
+function showPage(id, { resetScroll = true, focusHeading = true } = {}) {
+  if (!["home", "analyze"].includes(id)) return;
+  const page = $(`page-${id}`);
+  if (!page) return;
+
   document.querySelectorAll(".page").forEach(p => {
     p.classList.remove("active");
     p.hidden = true;
   });
-  const page = $(`page-${id}`);
-  if (page) {
-    page.hidden = false;
-    page.classList.add("active");
-  }
+  page.hidden = false;
+  page.classList.add("active");
   APP.currentPage = id;
+  document.body.classList.toggle("tool-page", id === "analyze");
 
-  document.querySelectorAll(".nav-link").forEach(l => {
-    const isActive = l.dataset.page === id;
-    l.classList.toggle("active", isActive);
-    if (isActive) l.setAttribute("aria-current", "page");
-    else l.removeAttribute("aria-current");
+  document.querySelectorAll("[data-page]").forEach(control => {
+    const isActive = control.dataset.page === id;
+    control.classList.toggle("active", isActive);
+    if (isActive) control.setAttribute("aria-current", "page");
+    else control.removeAttribute("aria-current");
   });
+  setActiveHomeSection(APP.currentSection);
 
   setMobileNav(false);
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
+  if (resetScroll) window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
 
   const titles = {
     home: "PostAI — Postal address intelligence",
-    analyze: "Analyze an address — PostAI",
-    how: "How PostAI works",
-    dashboard: "Prototype analytics — PostAI",
-    about: "About PostAI"
+    analyze: "Analyze an address — PostAI"
   };
   document.title = titles[id] || titles.home;
   const skipLink = document.querySelector(".skip-link");
   if (skipLink) skipLink.setAttribute("href", `#page-${id}`);
 
-  const heading = page && page.querySelector("h1");
-  if (heading) {
+  const heading = page.querySelector("h1");
+  if (heading && focusHeading) {
     heading.setAttribute("tabindex", "-1");
     heading.focus({ preventScroll: true });
   }
 
-  if (id === "dashboard") renderDashboard();
+  if (id === "home") {
+    requestAnimationFrame(() => Object.values(APP.charts).forEach(chart => {
+      try { chart.resize(); } catch (e) {}
+    }));
+  }
+}
+
+function showHomeSection(id) {
+  const target = $(id);
+  if (!target) return;
+  if (APP.currentPage !== "home") {
+    showPage("home", { resetScroll: false, focusHeading: false });
+  }
+  setMobileNav(false);
+  setActiveHomeSection(id);
+  if ((id === "sample-data" || id === "about-project") && !APP.dashboardInitialized) {
+    APP.dashboardInitialized = true;
+    renderDashboard();
+  }
+  if (APP.sectionSettleTimer) clearTimeout(APP.sectionSettleTimer);
+  requestAnimationFrame(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
+    if (prefersReducedMotion) {
+      setActiveHomeSection(id);
+      return;
+    }
+    APP.sectionSettleTimer = setTimeout(() => {
+      if (APP.currentPage === "home") setActiveHomeSection(id);
+      APP.sectionSettleTimer = null;
+    }, 900);
+  });
 }
 
 // ─── Toast ───────────────────────────────────────────────────────────────────
@@ -286,7 +331,7 @@ function renderResults(data) {
 
   // ── Recommendation Card
   if (top) {
-    const scoreColor = top.score >= 80 ? "#70c7a5" : top.score >= 60 ? "#d6a251" : "#df7168";
+    const scoreColor = top.score >= 80 ? "#4daf4f" : top.score >= 60 ? "#f8ba3c" : "#df493f";
     const reasons    = explainRecommendation(top);
     container.innerHTML += `
       <div class="result-card recommendation-card slide-up">
@@ -328,7 +373,7 @@ function renderResults(data) {
     container.innerHTML += `
       <div class="result-card slide-up">
         <div class="card-header"><span class="badge badge-warn">No Match Found</span></div>
-        <p style="color:#64748b;margin:0">Unable to determine a reliable delivery office from the available information. Please provide a more complete address including area name and PIN code.</p>
+        <p class="no-match-text">Unable to determine a reliable delivery office from the available information. Please provide a more complete address including area name and PIN code.</p>
       </div>`;
   }
 
@@ -440,7 +485,7 @@ function recDetail(label, value) {
   return `<div class="rec-detail"><div class="rec-detail-label">${escapeHTML(label)}</div><div class="rec-detail-val">${escapeHTML(value)}</div></div>`;
 }
 function breakdownRow(label, score, weight, sublabel) {
-  const color = score >= 80 ? "#28745d" : score >= 50 ? "#b17a28" : "#b5473d";
+  const color = score >= 80 ? "#247a35" : score >= 50 ? "#8b5700" : "#a62f27";
   return `
     <div class="breakdown-row">
       <div class="br-left">
@@ -473,7 +518,14 @@ function initMap(coords, candidates) {
   if (APP.leafletMap) { APP.leafletMap.remove(); APP.leafletMap = null; }
 
   try {
-    const map = L.map("map-container", { zoomControl: true, scrollWheelZoom: false });
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const map = L.map("map-container", {
+      zoomControl: true,
+      scrollWheelZoom: false,
+      zoomAnimation: !prefersReducedMotion,
+      fadeAnimation: !prefersReducedMotion,
+      markerZoomAnimation: !prefersReducedMotion
+    });
     APP.leafletMap = map;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -511,7 +563,7 @@ function initMap(coords, candidates) {
     if (candidates.length > 0) {
       const top = candidates[0];
       L.polyline([[coords.lat, coords.lng], [top.office.lat, top.office.lng]], {
-        color: "#dd5b3f", weight: 2.5, dashArray: "6 4", opacity: 0.82
+        color: "#f16430", weight: 3, dashArray: "8 6", opacity: 0.9
       }).addTo(map);
     }
 
@@ -672,6 +724,25 @@ function renderDashboard() {
   document.querySelectorAll(".chart-card canvas").forEach(c => { c.style.display = "block"; });
   document.querySelectorAll(".chart-fallback").forEach(el => el.remove());
 
+  const theme = getComputedStyle(document.documentElement);
+  const themeColor = (name, fallback) => theme.getPropertyValue(name).trim() || fallback;
+  const palette = {
+    black: themeColor("--u-black", "#0b0b0b"),
+    blue: themeColor("--u-blue", "#3574df"),
+    yellow: themeColor("--u-yellow", "#f8ba3c"),
+    orange: themeColor("--u-orange", "#f16430"),
+    red: themeColor("--u-red", "#df493f"),
+    green: themeColor("--u-green", "#4daf4f"),
+    purple: themeColor("--u-purple", "#a653e8")
+  };
+  Chart.defaults.color = palette.black;
+  Chart.defaults.font.family = "Arial, Helvetica, sans-serif";
+  Chart.defaults.maintainAspectRatio = false;
+  Chart.defaults.animation = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? false
+    : { duration: 900, easing: "easeOutQuart" };
+  const gridColor = "rgba(11, 11, 11, 0.13)";
+
   // Confidence Distribution (Doughnut)
   const ctx1 = $("chart-confidence");
   if (ctx1) {
@@ -679,7 +750,7 @@ function renderDashboard() {
       type: "doughnut",
       data: {
         labels: ["Very High (≥90%)", "High (75–89%)", "Medium (60–74%)", "Low (<60%)"],
-        datasets: [{ data: [68, 29, 18, 13], backgroundColor: ["#28745d","#376f7b","#c08a35","#b5473d"], borderWidth: 0, hoverOffset: 6 }]
+        datasets: [{ data: [68, 29, 18, 13], backgroundColor: [palette.green, palette.blue, palette.yellow, palette.red], borderColor: palette.black, borderWidth: 1.5, hoverOffset: 6 }]
       },
       options: { responsive: true, cutout: "65%", plugins: { legend: { position: "bottom", labels: { font: { size: 12 }, padding: 16 } } } }
     });
@@ -692,9 +763,9 @@ function renderDashboard() {
       type: "bar",
       data: {
         labels: ["Feb","Mar","Apr","May","Jun","Jul","Aug"],
-        datasets: [{ label: "Addresses analyzed", data: [12,14,16,18,19,22,27], backgroundColor: "#dd5b3f", borderRadius: 6 }]
+        datasets: [{ label: "Addresses analyzed", data: [12,14,16,18,19,22,27], backgroundColor: palette.orange, borderColor: palette.black, borderWidth: 1, borderRadius: 9 }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } } }
     });
   }
 
@@ -706,11 +777,11 @@ function renderDashboard() {
       data: {
         labels: ["Anna Nagar","T Nagar","Adyar","Velachery","Tambaram","Nungambakkam"],
         datasets: [
-          { label: "Matched",   data: [24,18,14,11,9,7],  backgroundColor: "#28745d", borderRadius: 4 },
-          { label: "Mismatch",  data: [4, 2, 3, 3, 2, 3], backgroundColor: "#b5473d", borderRadius: 4 }
+          { label: "Matched",   data: [24,18,14,11,9,7],  backgroundColor: palette.green, borderColor: palette.black, borderWidth: 1, borderRadius: 5 },
+          { label: "Mismatch",  data: [4, 2, 3, 3, 2, 3], backgroundColor: palette.red, borderColor: palette.black, borderWidth: 1, borderRadius: 5 }
         ]
       },
-      options: { responsive: true, plugins: { legend: { position: "bottom" } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, grid: { color: "#f1f5f9" } } } }
+      options: { responsive: true, plugins: { legend: { position: "bottom" } }, scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, grid: { color: gridColor } } } }
     });
   }
 
@@ -721,9 +792,9 @@ function renderDashboard() {
       type: "line",
       data: {
         labels: ["Feb","Mar","Apr","May","Jun","Jul","Aug"],
-        datasets: [{ label: "Average distance (km)", data: [4.1,3.8,3.2,2.9,3.1,2.7,2.4], borderColor: "#376f7b", backgroundColor: "rgba(55,111,123,0.09)", fill: true, tension: 0.36, pointRadius: 3 }]
+        datasets: [{ label: "Average distance (km)", data: [4.1,3.8,3.2,2.9,3.1,2.7,2.4], borderColor: palette.blue, backgroundColor: "rgba(53,116,223,0.14)", pointBackgroundColor: palette.yellow, pointBorderColor: palette.black, pointBorderWidth: 1, fill: true, tension: 0.36, pointRadius: 4 }]
       },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, min: 1, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false, min: 1, grid: { color: gridColor } }, x: { grid: { display: false } } } }
     });
   }
 }
@@ -744,33 +815,120 @@ function initHomeWorkflow() {
     section.classList.add("is-in-view");
     homeWorkflowObserver.disconnect();
   }, {
-    threshold: 0.22,
-    rootMargin: "0px 0px -10% 0px"
+    threshold: 0.01,
+    rootMargin: "0px 0px -5% 0px"
   });
 
   homeWorkflowObserver.observe(section);
 }
 
+function initHomeSectionNavigation() {
+  const sections = [...document.querySelectorAll("[data-home-section]")];
+  if (!sections.length || !("IntersectionObserver" in window)) return;
+
+  const sectionObserver = new IntersectionObserver(entries => {
+    if (APP.currentPage !== "home") return;
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible) setActiveHomeSection(visible.target.id);
+  }, {
+    threshold: [0.01, 0.04],
+    rootMargin: "-16% 0px -68% 0px"
+  });
+
+  sections.forEach(section => sectionObserver.observe(section));
+}
+
+function initScrollReveals() {
+  const items = [...document.querySelectorAll("[data-reveal], .impact-item, .chart-card, .tech-card")];
+  if (!items.length) return;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  items.forEach((item, index) => {
+    item.classList.add("reveal-item");
+    item.style.setProperty("--reveal-order", String(index % 4));
+  });
+
+  if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+    items.forEach(item => item.classList.add("is-visible"));
+    return;
+  }
+
+  document.body.classList.add("motion-ready");
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      revealObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+
+  items.forEach(item => revealObserver.observe(item));
+}
+
+function initDashboardOnView() {
+  const chartGrid = document.querySelector("#sample-data .charts-grid");
+  if (!chartGrid || APP.dashboardInitialized) return;
+
+  const draw = () => {
+    if (APP.dashboardInitialized) return;
+    APP.dashboardInitialized = true;
+    renderDashboard();
+  };
+
+  if (!("IntersectionObserver" in window)) {
+    draw();
+    return;
+  }
+
+  const dashboardObserver = new IntersectionObserver(entries => {
+    if (!entries.some(entry => entry.isIntersecting)) return;
+    dashboardObserver.disconnect();
+    draw();
+  }, { threshold: 0.08, rootMargin: "0px 0px 18% 0px" });
+
+  dashboardObserver.observe(chartGrid);
+}
+
+function initTickerControl() {
+  const ticker = document.querySelector(".problem-chips");
+  const toggle = $("ticker-toggle");
+  if (!ticker || !toggle) return;
+
+  const setPaused = paused => {
+    ticker.classList.toggle("is-paused", paused);
+    toggle.setAttribute("aria-pressed", String(paused));
+    toggle.setAttribute("aria-label", paused ? "Play moving address issues" : "Pause moving address issues");
+    toggle.textContent = paused ? "▶" : "Ⅱ";
+  };
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setPaused(prefersReducedMotion);
+  if (prefersReducedMotion) {
+    toggle.hidden = true;
+    return;
+  }
+  toggle.addEventListener("click", () => setPaused(!ticker.classList.contains("is-paused")));
+}
+
 // ─── Event Binding ────────────────────────────────────────────────────────────
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Nav links (desktop + mobile)
-  document.querySelectorAll(".nav-link").forEach(l => {
-    l.addEventListener("click", e => {
+  // Page navigation and homepage section navigation
+  document.querySelectorAll("[data-page]").forEach(control => {
+    control.addEventListener("click", () => showPage(control.dataset.page));
+  });
+  document.querySelectorAll("[data-scroll-target]").forEach(control => {
+    control.addEventListener("click", e => {
       e.preventDefault();
-      showPage(l.dataset.page);
-      setMobileNav(false);
+      showHomeSection(control.dataset.scrollTarget);
     });
   });
 
   // Hero CTA buttons
   $("hero-analyze-btn") && $("hero-analyze-btn").addEventListener("click", () => showPage("analyze"));
-  $("hero-how-btn") && $("hero-how-btn").addEventListener("click", () => {
-    const section = $("home-how-it-works");
-    if (!section) return;
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    section.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
-  });
+  $("hero-how-btn") && $("hero-how-btn").addEventListener("click", () => showHomeSection("home-how-it-works"));
 
   // Feature "Learn more" / CTA
   document.querySelectorAll("[data-goto]").forEach(el => {
@@ -860,10 +1018,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (window.innerWidth > 1040) setMobileNav(false);
   });
 
-  // Initial chart render if starting on dashboard
-  if (APP.currentPage === "dashboard") renderDashboard();
-
   initHomeWorkflow();
+  initHomeSectionNavigation();
+  initScrollReveals();
+  initDashboardOnView();
+  initTickerControl();
 
   // Initialise OCR banner based on Tesseract availability
   initOCRBanner();
